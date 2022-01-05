@@ -36,6 +36,15 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['email', 'password', 'name']
         extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}
 
+    def update(self, instance, validated_data):
+        """Updating the user to set the password correctly"""
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
+
     def create(self, validated_data):
         """creating a new user with encrypted password and return it"""
         return get_user_model().objects.create_user(**validated_data)
